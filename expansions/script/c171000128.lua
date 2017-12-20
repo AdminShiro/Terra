@@ -1,4 +1,4 @@
---Cracked Amethyst
+--Discarded Amethyst
 local ref=_G['c'..171000128]
 function ref.initial_effect(c)
 	--Activate
@@ -17,7 +17,7 @@ function ref.cfilter(c)
 	return c:IsSetCard(0xfef) and c:IsDestructable()
 end
 function ref.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsExistingMatchingCard(ref.cfilter,tp,LOCATION_SZONE,0,1,nil) end
+	if chk==0 then return Duel.IsExistingMatchingCard(ref.cfilter,tp,LOCATION_PZONE,0,1,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)
 	local g=Duel.SelectMatchingCard(tp,ref.cfilter,tp,LOCATION_PZONE,0,1,1,nil)
 	Duel.Destroy(g,REASON_COST)
