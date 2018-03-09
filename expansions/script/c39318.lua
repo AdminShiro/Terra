@@ -48,7 +48,6 @@ function c39318.op(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
 	local sel=e:GetLabel()
-	Debug.Message(sel)
 	if sel==0 then return end
 	if sel==1 then
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SUMMON)
@@ -72,7 +71,7 @@ end
 function c39318.activate(e,tp,eg,ep,ev,re,r,rp)
 	if not e:GetHandler():IsRelateToEffect(e) then return end
 	local g=Duel.GetMatchingGroup(c39318.filter,tp,LOCATION_DECK,0,nil)
-	if g:GetCount()>0 and Duel.SelectYesNo(tp,aux.Stringid(39318,3)) then
+	if g:GetCount()>0 and Duel.SelectYesNo(tp,aux.Stringid(39318,2)) then
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
 		local sg=g:Select(tp,1,1,nil)
 		Duel.SendtoHand(sg,nil,REASON_EFFECT)

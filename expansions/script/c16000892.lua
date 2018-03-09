@@ -11,6 +11,7 @@ function c16000892.initial_effect(c)
 	e1:SetCondition(c16000892.condition)
 	e1:SetCost(c16000892.cost)
 	e1:SetOperation(c16000892.operation)
+	e1:SetHintTiming(0,TIMING_MAIN_END)
 	c:RegisterEffect(e1)
 			--Search
 	local e2=Effect.CreateEffect(c)
@@ -54,11 +55,11 @@ function c16000892.initial_effect(c)
 end
 
 function c16000892.condition(e,tp,eg,ep,ev,re,r,rp)
-	return Duel.GetTurnPlayer()~=tp 
+	return Duel.GetTurnPlayer()~=tp and Duel.GetCurrentPhase()<PHASE_BATTLE_START
 end
 function c16000892.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return e:GetHandler():IsAbleToExtra()  end
-		Duel.Destroy(e:GetHandler(),REASON_COST)
+	if chk==0 then return e:GetHandler():IsDestructable(e) end
+	Duel.Destroy(e:GetHandler(),REASON_COST)
 end
 
 function c16000892.operation(e,tp,eg,ep,ev,re,r,rp)
