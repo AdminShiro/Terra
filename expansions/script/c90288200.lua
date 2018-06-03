@@ -2,7 +2,6 @@
 local card = c90288200
 function card.initial_effect(c)
 	aux.AddOrigPandemoniumType(c)
-	aux.EnablePandemoniumAttribute(c,e1)
 	--Negate
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(90288200,1))
@@ -15,6 +14,7 @@ function card.initial_effect(c)
 	e1:SetTarget(card.target)
 	e1:SetOperation(card.operation)
 	c:RegisterEffect(e1)
+	aux.EnablePandemoniumAttribute(c,e1)
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(90288200,0))
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -26,10 +26,11 @@ function card.initial_effect(c)
 	c:RegisterEffect(e2)
 end
 function card.setfilter(c,tp)
-	return c:IsSetCard(0xcf80) and not Duel.IsPlayerAffectedByEffect(tp,EFFECT_CANNOT_SSET) and not c:IsCode(90288200)
+	return c:IsSetCard(0xcf80) and c:IsType(TYPE_PANDEMONIUM) and not c:IsCode(90288200)
 end
 function card.settg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
+		and not Duel.IsPlayerAffectedByEffect(tp,EFFECT_CANNOT_SSET)
 		and Duel.IsExistingMatchingCard(card.setfilter,tp,LOCATION_DECK,0,1,nil,tp) end
 end
 function card.setop(e,tp,eg,ep,ev,re,r,rp)
@@ -46,7 +47,7 @@ end
 function card.condition(e,tp,eg,ep,ev,re,r,rp)
 	if not re:IsHasProperty(EFFECT_FLAG_CARD_TARGET) then return false end
 	local g=Duel.GetChainInfo(ev,CHAININFO_TARGET_CARDS)
-	return g and g:IsExists(card.filter,1,nil,tp)
+	return aux.PandActCheck(e) and g and g:IsExists(card.filter,1,nil,tp)
 		and Duel.IsChainNegatable(ev)
 end
 function card.target(e,tp,eg,ep,ev,re,r,rp,chk)
