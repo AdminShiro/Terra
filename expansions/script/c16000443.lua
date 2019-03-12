@@ -26,6 +26,7 @@ function c16000443.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
 	e2:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
+	e2:SetTarget(c16000443.tgtg3)
 	e2:SetValue(aux.tgoval)
 	c:RegisterEffect(e2)
 --atkup
@@ -61,8 +62,12 @@ function c16000443.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	e:GetHandler():SetMaterial(g:Filter(Card.IsLocation,nil,LOCATION_REMOVED))
 end
 function c16000443.tgtg(e,c)
-	return e:GetHandler():GetLinkedGroup():IsContains(c)
+	return e:GetHandler():GetLinkedGroup():IsContains(c) and c:IsType(TYPE_NORMAL)
 end
+function c16000443.tgtg3(e,c)
+ return e:GetHandler()==c or (c:IsType(TYPE_NORMAL) and e:GetHandler():GetLinkedGroup():IsContains(c))
+end
+ 
 function c16000443.tdcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_LINK)
 end
@@ -76,7 +81,7 @@ function c16000443.tdop(e,tp,eg,ep,ev,re,r,rp)
 	Duel.SendtoDeck(g,nil,2,REASON_EFFECT)
 	local ct=g:FilterCount(Card.IsLocation,nil,LOCATION_DECK)
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-	Duel.Recover(tp,ct*500,REASON_EFFECT)
+	Duel.Recover(tp,ct*300,REASON_EFFECT)
 	
 	end
 end
