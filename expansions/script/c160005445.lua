@@ -10,8 +10,8 @@ function c160005445.initial_effect(c)
 	e1:SetTargetRange(LOCATION_MZONE,0)
 	e1:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,0xc50))
 	e1:SetValue(200)
-  c:RegisterEffect(e1)
-	local e2=e1:Clone()
+	c:RegisterEffect(e1)
+	 local e2=e1:Clone()
 	e2:SetCode(EFFECT_UPDATE_DEFENSE)
 	c:RegisterEffect(e2)
 	--to hand
@@ -33,7 +33,7 @@ function c160005445.splimcon(e)
 	return not e:GetHandler():IsForbidden()
 end
 function c160005445.pfilter(c)
-	return c:IsFaceup() and c:IsType(TYPE_PENDULUM) and (c:IsSetCard(0xc50) or c:IsType(TYPE_NORMAL)) and c:IsAbleToHand()
+	return c:IsFaceup() and c:IsType(TYPE_PENDULUM) and c:IsSetCard(0xc50) and c:IsAbleToHand()
 end
 function c160005445.ptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(c160005445.pfilter,tp,LOCATION_EXTRA,0,2,nil) end
