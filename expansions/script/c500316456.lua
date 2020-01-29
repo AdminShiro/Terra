@@ -24,13 +24,13 @@ function c500316456.checku(sg,ec,tp)
 return sg:IsExists(Card.IsType,1,nil,TYPE_NORMAL)
 end
 function c500316456.filter1(c,ec,tp)
-	return c:IsAttribute(ATTRIBUTE_LIGHT)
+	return c:IsAttribute(ATTRIBUTE_LIGHT) or c:IsRace(RACE_FAIRY)
 end
 function c500316456.filter2(c,ec,tp)
-	return c:IsRace(RACE_FAIRY)
+	return c:IsAttribute(ATTRIBUTE_LIGHT) or c:IsRace(RACE_FAIRY)
 end
 function c500316456.filter(c,e,tp)
-	return c:IsType(TYPE_NORMAL) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+	return not c:IsType(TYPE_EFFECT) and c:IsType(TYPE_MONSTER) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
 function c500316456.desfilter(c)
 	return c:IsFaceup() and bit.band(c:GetSummonType(),SUMMON_TYPE_SPECIAL)~=0 
@@ -40,11 +40,11 @@ function c500316456.costfilter(c)
 	return c:IsAbleToRemoveAsCost() and c:IsType(TYPE_NORMAL) and (c:IsType(TYPE_PENDULUM) and c:IsFaceup())
 end
 function c500316456.adcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return e:GetHandler():IsCanRemoveCounter(tp,0x88,3,REASON_COST) and Duel.IsExistingMatchingCard(c500316456.costfilter,tp,LOCATION_EXTRA,0,1,nil) end
+	if chk==0 then return  e:GetHandler():IsCanRemoveEC(tp,3,REASON_COST) and Duel.IsExistingMatchingCard(c500316456.costfilter,tp,LOCATION_EXTRA,0,1,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
 	local g=Duel.SelectMatchingCard(tp,c500316456.costfilter,tp,LOCATION_EXTRA,0,1,1,nil)
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
-	e:GetHandler():RemoveCounter(tp,0x88,3,REASON_COST)
+	e:GetHandler():RemoveEC(tp,3,REASON_COST)
 end
 
 function c500316456.cfilter(c)

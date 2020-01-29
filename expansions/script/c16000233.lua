@@ -7,27 +7,17 @@ function c16000233.initial_effect(c)
 	e1:SetDescription(aux.Stringid(16000233,0))
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_MZONE)
-	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
+	--e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e1:SetCountLimit(1,16000233)
 	e1:SetCost(c16000233.thcost)
 	e1:SetTarget(c16000233.thtg)
 	e1:SetOperation(c16000233.thop)
 	c:RegisterEffect(e1)
-	--summon
-	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(16000233,1))
-	e2:SetCategory(CATEGORY_SUMMON)
-	e2:SetType(EFFECT_TYPE_IGNITION)
-	e2:SetRange(LOCATION_MZONE)
-	e2:SetCountLimit(1)
-	e2:SetCondition(c16000233.sumcon)
-	e2:SetTarget(c16000233.sumtg)
-	e2:SetOperation(c16000233.sumop)
-	c:RegisterEffect(e2)
+
 	--Negate
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(16000233,1))
-	e4:SetCategory(CATEGORY_DESTROY+CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON)
+	e4:SetCategory(CATEGORY_DESTROY+CATEGORY_SPECIAL_SUMMON+CATEGORY_TOEXTRA)
 	e4:SetType(EFFECT_TYPE_IGNITION)
 	e4:SetRange(LOCATION_PZONE)
 	e4:SetCountLimit(1,16001233)
@@ -41,7 +31,7 @@ function c16000233.rmfilter(c,e,tp)
 		and Duel.IsExistingTarget(c16000233.filterx,tp,LOCATION_EXTRA+LOCATION_GRAVE,0,1,c,e,tp)
 end
 function c16000233.filterx(c)
-	return c:IsFaceup() and c:IsType(TYPE_NORMAL) and c:IsAbleToHand()
+	return c:IsFaceup() and c:IsType(TYPE_MONSTER) and not c:IsType(TYPE_EFFECT) and c:IsAbleToHand()
 end
 function c16000233.thcost(e,tp,eg,ep,ev,re,r,rp,chk)	
 if chk==0 then return Duel.IsExistingMatchingCard(c16000233.rmfilter,tp,LOCATION_EXTRA,0,1,nil,e,tp) end
@@ -49,22 +39,30 @@ local g=Duel.SelectMatchingCard(tp,c16000233.rmfilter,tp,LOCATION_EXTRA,0,1,1,ni
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
 end
 function c16000233.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsControler(tp)  and c16000233.filterx(chkc) end
-	if chk==0 then return true end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)
-	local g=Duel.SelectTarget(tp,c16000233.filterx,tp,LOCATION_EXTRA+LOCATION_GRAVE,0,1,1,nil)
-	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
+  if chk==0 then return Duel.IsExistingMatchingCard(c16000233.filterx,tp,LOCATION_EXTRA+LOCATION_GRAVE,0,1,nil) end
+	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_EXTRA+LOCATION_GRAVE)
 end
 function c16000233.thop(e,tp,eg,ep,ev,re,r,rp)
-	local c=e:GetHandler()
-	local tc=Duel.GetFirstTarget()
-	if tc:IsRelateToEffect(e) then
-		Duel.SendtoHand(tc,nil,REASON_EFFECT)
-		Duel.ConfirmCards(1-tp,tc)
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
+	local g=Duel.SelectMatchingCard(tp,c16000233.filterx,tp,LOCATION_EXTRA+LOCATION_GRAVE,0,1,1,nil)
+	if g:GetCount()>0 then
+		Duel.SendtoHand(g,nil,REASON_EFFECT)
+		Duel.ConfirmCards(1-tp,g)
+  if Duel.GetFlagEffect(tp,16000233)~=0 then return end
+	local e1=Effect.CreateEffect(e:GetHandler())
+	e1:SetDescription(aux.Stringid(16000233,0))
+	e1:SetType(EFFECT_TYPE_FIELD)
+	e1:SetTargetRange(LOCATION_HAND+LOCATION_MZONE,0)
+	e1:SetCode(EFFECT_EXTRA_SUMMON_COUNT)
+	e1:SetTarget(c16000233.disable)
+	e1:SetReset(RESET_PHASE+PHASE_END)
+	Duel.RegisterEffect(e1,tp)
+	Duel.RegisterFlagEffect(tp,16000233,RESET_PHASE+PHASE_END,0,1)
+
 	end
-	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		c:RegisterFlagEffect(16000233,RESET_EVENT+0x1fe0000+RESET_PHASE+PHASE_END,0,1)
-	end
+end
+function c16000233.disable(e,c)
+	return not c:IsType(TYPE_EFFECT) or not bit.band(c:GetOriginalType(),TYPE_EFFECT)==TYPE_EFFECT
 end
 function c16000233.filter(c,e,tp,b1,setcode)
 	return c:IsType(TYPE_PENDULUM) and c:IsType(TYPE_NORMAL) and not c:IsForbidden()
@@ -107,6 +105,8 @@ function c16000233.target(e,tp,eg,ep,ev,re,r,rp,chk)
 		and Duel.IsExistingMatchingCard(c16000233.filter,tp,LOCATION_DECK,0,1,nil,e,tp,b1,nil)
 		and Duel.IsExistingMatchingCard(c16000233.filter2,tp,LOCATION_DECK,0,1,nil,e,tp,b1,nil) end
 	 Duel.SetOperationInfo(0,CATEGORY_DESTROY,e:GetHandler(),1,0,0)
+		Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,0,tp,LOCATION_DECK)
+	Duel.SetOperationInfo(0,CATEGORY_TOEXTRA,nil,1,tp,LOCATION_DECK)
 end
 function c16000233.operation(e,tp,eg,ep,ev,re,r,rp)
 	 local c=e:GetHandler()
@@ -134,4 +134,15 @@ function c16000233.operation(e,tp,eg,ep,ev,re,r,rp)
 	end
 	sg1:RemoveCard(tc)
 	Duel.SendtoExtraP(sg1,nil,REASON_EFFECT)
+		local e1=Effect.CreateEffect(c)
+		e1:SetType(EFFECT_TYPE_FIELD)
+		e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+		e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
+		e1:SetTargetRange(1,0)
+		e1:SetTarget(c16000233.sumlimit)
+		e1:SetReset(RESET_PHASE+PHASE_END)
+		Duel.RegisterEffect(e1,tp)
+end
+function c16000233.sumlimit(e,c,sump,sumtype,sumpos,targetp)
+	return c:IsLocation(LOCATION_EXTRA) and not ( c:IsSetCard(0xc50) or not c:IsType(TYPE_EFFECT))
 end

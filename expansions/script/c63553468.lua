@@ -28,9 +28,9 @@ function c63553468.initial_effect(c)
 	c:RegisterEffect(e3)
 end
 --filters
-function c63553468.matfilter1(c)
+function c63553468.matfilter1(c,syncard)
 	return (c:IsType(TYPE_TUNER) and (c:IsType(TYPE_PENDULUM) or c:GetType()&TYPE_PANDEMONIUM==TYPE_PANDEMONIUM))
-		or ((c:IsType(TYPE_PENDULUM) or c:GetType()&TYPE_PANDEMONIUM==TYPE_PANDEMONIUM) and c:IsNotTuner())
+		or ((c:IsType(TYPE_PENDULUM) or c:GetType()&TYPE_PANDEMONIUM==TYPE_PANDEMONIUM) and c:IsNotTuner(syncard))
 end
 function c63553468.thfilter(c)
 	return c:IsFaceup() and c:IsType(TYPE_PENDULUM) and c:IsAbleToHand()
@@ -50,7 +50,7 @@ function c63553468.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		local sel=0
 		if Duel.IsExistingMatchingCard(c63553468.thfilter,tp,LOCATION_EXTRA,0,1,nil) then sel=sel+1 end
-		if Duel.GetLocationCount(tp,LOCATION_SZONE)>0 and Duel.IsExistingMatchingCard(c63553468.setfilter,tp,LOCATION_DECK,0,1,nil) then sel=sel+2 end
+		if Duel.GetLocationCount(tp,LOCATION_SZONE)>0 and aux.PandSSetCon(c63553468.setfilter,nil,LOCATION_DECK)(nil,e,tp,eg,ep,ev,re,r,rp) and Duel.IsExistingMatchingCard(c63553468.setfilter,tp,LOCATION_DECK,0,1,nil) then sel=sel+2 end
 		e:SetLabel(sel)
 		return sel~=0
 	end
@@ -81,20 +81,13 @@ function c63553468.operation(e,tp,eg,ep,ev,re,r,rp)
 			Duel.ConfirmCards(1-tp,g)
 		end
 	else
-		if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 then return end
+		if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 or not aux.PandSSetCon(c63553468.setfilter,nil,LOCATION_DECK)(nil,e,tp,eg,ep,ev,re,r,rp) then return end
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)
-		local g=Duel.SelectMatchingCard(tp,c63553468.setfilter,tp,LOCATION_DECK,0,1,1,nil)
+		local g=Duel.SelectMatchingCard(tp,aux.PandSSetFilter(c63553468.setfilter),tp,LOCATION_DECK,0,1,1,nil)
 		local tc=g:GetFirst()
 		if tc then
-			Card.SetCardData(tc,CARDDATA_TYPE,TYPE_TRAP+TYPE_CONTINUOUS)
-			Duel.SSet(tp,tc)
-			if not tc:IsLocation(LOCATION_SZONE) then
-				if tc:GetOriginalType()==TYPE_MONSTER+TYPE_EFFECT then
-					Card.SetCardData(tc,CARDDATA_TYPE,TYPE_MONSTER+TYPE_EFFECT)
-				elseif tc:GetOriginalType()==TYPE_MONSTER+TYPE_EFFECT+TYPE_TUNER or tc:GetOriginalType()==TYPE_MONSTER+TYPE_TUNER then
-					Card.SetCardData(tc,CARDDATA_TYPE,TYPE_MONSTER+TYPE_EFFECT+TYPE_TUNER)
-				end
-			end
+			aux.PandSSet(tc,REASON_EFFECT,aux.GetOriginalPandemoniumType(tc))(e,tp,eg,ep,ev,re,r,rp)
+			Duel.ConfirmCards(1-tp,tc)
 		end
 	end
 end

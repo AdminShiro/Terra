@@ -1,108 +1,112 @@
 --Paintress Dragon
-function c160008741.initial_effect(c)
+local cid,id=GetID()
+function cid.initial_effect(c)
    aux.AddOrigEvoluteType(c)
 	c:EnableReviveLimit()
-  aux.AddEvoluteProc(c,nil,8,c160008741.filter1,c160008741.filter2,3,99)
+  aux.AddEvoluteProc(c,nil,8,cid.filter1,cid.filter1,2,99)
 	--destroy
-	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(160008741,0))
-	e1:SetCategory(CATEGORY_DESTROY)
-	e1:SetType(EFFECT_TYPE_QUICK_O)
-	e1:SetCode(EVENT_FREE_CHAIN)
-	e1:SetHintTiming(0,0x11e0)
-	e1:SetCountLimit(1)
-	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
-	e1:SetRange(LOCATION_MZONE)
-	e1:SetCost(c160008741.eqcost)
-	e1:SetCondition(c160008741.descon)
-	e1:SetTarget(c160008741.destg)
-	e1:SetOperation(c160008741.desop)
-	c:RegisterEffect(e1)
-	--change type
-	local e2=Effect.CreateEffect(c)
-	e2:SetType(EFFECT_TYPE_SINGLE)
-	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
-	e2:SetCode(EFFECT_ADD_TYPE)
-	e2:SetRange(LOCATION_GRAVE)
-	e2:SetValue(TYPE_NORMAL)
-	c:RegisterEffect(e2)
   local e3=Effect.CreateEffect(c)
-	e3:SetType(EFFECT_TYPE_SINGLE)
-	e3:SetCode(EFFECT_MATERIAL_CHECK)
-	e3:SetValue(c160008741.valcheck)
-	e3:SetLabelObject(e1)
+	e3:SetDescription(aux.Stringid(id,0))
+	e3:SetCategory(CATEGORY_DESTROY+CATEGORY_DESTROY)
+	e3:SetType(EFFECT_TYPE_QUICK_O)
+	e3:SetProperty(EFFECT_FLAG_CARD_TARGET)
+	e3:SetCode(EVENT_FREE_CHAIN)
+	e3:SetRange(LOCATION_MZONE)
+	e3:SetCountLimit(1)
+	e3:SetHintTiming(0,0x1e0)
+	e3:SetCost(cid.descost)
+	e3:SetTarget(cid.destg)
+	e3:SetOperation(cid.desop)
 	c:RegisterEffect(e3)
-	--check
-	local e0=Effect.CreateEffect(c)
-	e0:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
-	e0:SetCode(EVENT_BATTLE_START)
-	e0:SetOperation(c160008741.regop)
-	c:RegisterEffect(e0)
-			--atkup
+   --spsummon
 	local e4=Effect.CreateEffect(c)
-	e4:SetType(EFFECT_TYPE_SINGLE)
-	e4:SetCode(EFFECT_UPDATE_ATTACK)
-	e4:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
-	e4:SetRange(LOCATION_MZONE)
-	e4:SetValue(c160008741.atkval)
+	e4:SetDescription(aux.Stringid(id,1))
+	e4:SetCategory(CATEGORY_SPECIAL_SUMMON)
+	e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
+	e4:SetCode(EVENT_PHASE+PHASE_END)
+	e4:SetRange(LOCATION_GRAVE)
+	e4:SetCountLimit(1,id)
+	e4:SetCondition(cid.spcon)
+	e4:SetCost(cid.spcost)
+	e4:SetTarget(cid.sptg)
+	e4:SetOperation(cid.spop)
 	c:RegisterEffect(e4)
+	--atkup
+	local e5=Effect.CreateEffect(c)
+	e5:SetType(EFFECT_TYPE_SINGLE)
+	e5:SetCode(EFFECT_UPDATE_ATTACK)
+	e5:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
+	e5:SetRange(LOCATION_MZONE)
+	e5:SetValue(cid.atkval)
+	c:RegisterEffect(e5)
  end
-function c160008741.regop(e,tp,eg,ep,ev,re,r,rp)
-	local c=e:GetHandler()
-	local tc=Duel.GetAttackTarget()
-	if not tc or tc==c or tc:IsFacedown() then return end
-	local e1=Effect.CreateEffect(c)
-	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
-	e1:SetCode(EVENT_PRE_BATTLE_DAMAGE)
-	e1:SetCondition(c160008741.damcon)
-	e1:SetOperation(c160008741.damop)
-	e1:SetReset(RESET_EVENT+0x1ff0000+RESET_PHASE+PHASE_DAMAGE)
-	c:RegisterEffect(e1)
+--filters
+function cid.filter1(c,ec,tp)
+	return  c:IsSetCard(0xc50)
 end
-function c160008741.filter1(c,ec,tp)
-	return  c:IsAttribute(ATTRIBUTE_LIGHT)
+function cid.filter2(c,ec,tp)
+	return c:IsAttribute(ATTRIBUTE_LIGHT) or c:IsRace(RACE_FAIRY) 
 end
-function c160008741.filter2(c,ec,tp)
-	return  c:IsRace(RACE_FAIRY)
+
+
+function cid.costfilter(c)
+	return c:IsAbleToRemoveAsCost()  and  c:IsType(TYPE_PENDULUM)  and not c:IsType(TYPE_EFFECT)  and c:IsFaceup()
 end
-function c160008741.damcon(e,tp,eg,ep,ev,re,r,rp)
-	local bc=e:GetHandler():GetBattleTarget()
-	return e:GetHandler()==Duel.GetAttacker() and ep~=tp and bc~=nil   and  bc:IsType(TYPE_EFFECT)
+function cid.descost(e,tp,eg,ep,ev,re,r,rp,chk)
+   local c=e:GetHandler()
+	if chk==0 then return e:GetHandler():IsCanRemoveEC(tp,4,REASON_COST) and Duel.IsExistingMatchingCard(cid.costfilter,tp,LOCATION_EXTRA,0,1,nil) end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
+	local g=Duel.SelectMatchingCard(tp,cid.costfilter,tp,LOCATION_EXTRA,0,1,1,nil)
+	Duel.Remove(g,POS_FACEUP,REASON_COST)
+	e:GetHandler():RemoveEC(tp,4,REASON_COST)
+	c:RegisterFlagEffect(id,RESET_EVENT+0x1fe0000+RESET_PHASE+PHASE_DAMAGE_CAL,0,1)
 end
-function c160008741.damop(e,tp,eg,ep,ev,re,r,rp)
-	Duel.ChangeBattleDamage(ep,ev*2)
-end
-function c160008741.descon(e,tp,eg,ep,ev,re,r,rp)
-	return e:GetHandler():GetSummonType()==SUMMON_TYPE_SPECIAL+388
-end
-function c160008741.valcheck(e,c)
-	local ct=e:GetHandler():GetMaterial():FilterCount(Card.IsType,nil,TYPE_NORMAL)
-	e:GetLabelObject():SetLabel(ct)
-end
-function c160008741.eqcost(e,tp,eg,ep,ev,re,r,rp,chk)
-if chk==0 then return e:GetHandler():IsCanRemoveEC(tp,4,REASON_COST)  end
-e:GetHandler():RemoveEC(tp,4,REASON_COST)
-end
-function c160008741.filter(c)
-	return c:IsType(TYPE_EFFECT) and c:IsFaceup()  and c:IsDestructable()
-end
-function c160008741.destg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chkc then return chkc:IsOnField() and chkc:IsControler(1-tp) end
-	local ct=e:GetLabel()
-	if chk==0 then return ct>0 and Duel.IsExistingTarget(aux.TRUE,tp,0,LOCATION_ONFIELD,1,nil) end
+
+function cid.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+	 local c=e:GetHandler()
+	if chkc then return chkc:IsLocation(LOCATION_ONFIELD) and chkc:IsDestructable() and chkc~=c end
+	if chk==0 then return Duel.IsExistingTarget(Card.IsDestructable,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,c) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)
-	local g=Duel.SelectTarget(tp,aux.TRUE,tp,0,LOCATION_ONFIELD,1,ct,nil)
-	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
+	local g=Duel.SelectTarget(tp,Card.IsDestructable,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,c)
+	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
-function c160008741.desop(e,tp,eg,ep,ev,re,r,rp)
-	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToEffect,nil,e)
-	if g:GetCount()>0 then
-		Duel.Destroy(g,REASON_EFFECT)
+function cid.desop(e,tp,eg,ep,ev,re,r,rp)
+	 local tc=Duel.GetFirstTarget()
+	if tc and tc:IsRelateToEffect(e) then
+		 Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
-function c160008741.atkval(e,c)
-	return Duel.GetMatchingGroupCount(c160008741.atkfilter,c:GetControler(),LOCATION_REMOVED,LOCATION_REMOVED,nil,nil)*100
+function cid.filterc(c)
+	return c:IsType(TYPE_EFFECT) and c:IsAbleToHand() and c:IsFaceup()
 end
-function c160008741.atkfilter(c)
+
+function cid.atkval(e,c)
+	return Duel.GetMatchingGroupCount(cid.atkfilter,c:GetControler(),LOCATION_REMOVED,LOCATION_REMOVED,nil,nil)*100
+end
+function cid.atkfilter(c)
 	return c:IsFaceup()  and c:IsType(TYPE_MONSTER) and not c:IsType(TYPE_EFFECT)
+end
+
+function cid.spcon(e,tp,eg,ep,ev,re,r,rp)
+	return Duel.GetTurnPlayer()~=tp
+end
+function cid.cfilter(c)
+	return c:IsAbleToRemoveAsCost() and c:IsType(TYPE_MONSTER) and not c:IsType(TYPE_EFFECT) and c:IsFaceup()
+end
+function cid.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return Duel.IsExistingMatchingCard(cid.cfilter,tp,LOCATION_EXTRA,0,1,e:GetHandler()) end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
+	local tg=Duel.SelectMatchingCard(tp,cid.cfilter,tp,LOCATION_EXTRA,0,1,1,e:GetHandler())
+	Duel.Remove(tg,POS_FACEUP,REASON_COST)
+end
+function cid.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
+		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
+	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
+end
+function cid.spop(e,tp,eg,ep,ev,re,r,rp)
+	local c=e:GetHandler()
+	if c:IsRelateToEffect(e) then
+		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
+	end
 end

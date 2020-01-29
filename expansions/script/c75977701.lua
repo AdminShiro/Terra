@@ -27,7 +27,7 @@ function c75977701.initial_effect(c)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e2:SetProperty(EFFECT_FLAG_DELAY+EFFECT_FLAG_DAMAGE_STEP)
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)
-	e2:SetCountLimit(1,71977701)
+	e2:SetCountLimit(1,75977701)
 	e2:SetRange(LOCATION_MZONE)
 	e2:SetCondition(c75977701.actcon)
 	e2:SetTarget(c75977701.acttg)
@@ -38,7 +38,7 @@ function c75977701.initial_effect(c)
 	e3:SetDescription(aux.Stringid(75977701,2))
 	e3:SetType(EFFECT_TYPE_IGNITION)
 	e3:SetRange(LOCATION_MZONE)
-	e3:SetCountLimit(1,72977701)
+	e3:SetCountLimit(1,75977701)
 	e3:SetTarget(c75977701.thtg)
 	e3:SetOperation(c75977701.thop)
 	c:RegisterEffect(e3)
@@ -97,11 +97,9 @@ function c75977701.actop(e,tp,eg,ep,ev,re,r,rp)
 		Card.SetCardData(tc,CARDDATA_TYPE,TYPE_TRAP+TYPE_CONTINUOUS)
 		Duel.MoveToField(tc,tp,tp,LOCATION_SZONE,POS_FACEUP,true)
 		if not tc:IsLocation(LOCATION_SZONE) then
-			if tc:GetOriginalType()==TYPE_MONSTER+TYPE_EFFECT then
-				Card.SetCardData(tc,CARDDATA_TYPE,TYPE_MONSTER+TYPE_EFFECT)
-			elseif tc:GetOriginalType()==TYPE_MONSTER+TYPE_EFFECT+TYPE_TUNER or tc:GetOriginalType()==TYPE_MONSTER+TYPE_TUNER then
-				Card.SetCardData(g,CARDDATA_TYPE,TYPE_MONSTER+TYPE_EFFECT+TYPE_TUNER)
-			end
+			local edcheck=0
+			if tc:IsLocation(LOCATION_EXTRA) then edcheck=TYPE_PENDULUM end
+			Card.SetCardData(tc,CARDDATA_TYPE,TYPE_MONSTER+TYPE_EFFECT+edcheck+aux.GetOriginalPandemoniumType(tc))
 		else
 			tc:RegisterFlagEffect(726,RESET_EVENT+0x1fe0000,EFFECT_FLAG_CANNOT_DISABLE,1)
 			tc:RegisterFlagEffect(725,RESET_PHASE+PHASE_END,EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_IGNORE_IMMUNE+EFFECT_FLAG_SET_AVAILABLE,1)

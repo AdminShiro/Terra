@@ -2,12 +2,13 @@
 function c53313925.initial_effect(c)
 	c:EnableReviveLimit()
 	--Materials: 2+ Level 8 monsters
-	aux.AddXyzProcedure(c,nil,8,2,nil,nil,99)
+	aux.AddXyzProcedure(c,nil,8,2,c53313925.alternatesum,aux.Stringid(53313925,0),99)
 	--If this card is Xyz Summoned using 2+ "Mysterious" monsters with different names: You can destroy all monsters your opponent controls.
 	local e1=Effect.CreateEffect(c)
-	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
-	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e1:SetCategory(CATEGORY_DESTROY)
+	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
+	e1:SetProperty(EFFECT_FLAG_DELAY)
+	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e1:SetCondition(c53313925.descon)
 	e1:SetTarget(c53313925.destg)
 	e1:SetOperation(c53313925.desop)
@@ -24,7 +25,7 @@ function c53313925.initial_effect(c)
 	e2:SetTarget(c53313925.target)
 	e2:SetOperation(c53313925.activate)
 	c:RegisterEffect(e2)
-	--Once per turn: You can discard 1 card; add 1 "Rank-Up-Magic" Quick-Play Spell Card from your Deck to your hand.
+	--Once per turn: You can discard 1 card; add 1 "Mysterious" S/T from your Deck to your hand.
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_IGNITION)
 	e3:SetRange(LOCATION_MZONE)
@@ -35,9 +36,12 @@ function c53313925.initial_effect(c)
 	e3:SetOperation(c53313925.thop)
 	c:RegisterEffect(e3)
 end
+function c53313925.alternatesum(c)
+	return c:IsFaceup() and c:IsRank(7)
+end
 function c53313925.descon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	return c:IsSummonType(SUMMON_TYPE_XYZ) and c:GetMaterial():Filter(Card.IsSetCard,1,nil,0xcf6):GetClassCount(Card.GetCode)>1
+	return c:IsSummonType(SUMMON_TYPE_XYZ) and c:GetMaterial():Filter(Card.IsSetCard,nil,0xcf6):GetClassCount(Card.GetCode)>1
 end
 function c53313925.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(aux.TRUE,tp,0,LOCATION_MZONE,1,nil) end
@@ -80,7 +84,7 @@ function c53313925.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.DiscardHand(tp,Card.IsDiscardable,1,1,REASON_COST+REASON_DISCARD)
 end
 function c53313925.thfilter(c)
-	return c:IsType(TYPE_QUICKPLAY) and c:IsSetCard(0x95) and c:IsAbleToHand()
+	return c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsSetCard(0xcf6) and c:IsAbleToHand()
 end
 function c53313925.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(c53313925.thfilter,tp,LOCATION_DECK,0,1,nil) end
